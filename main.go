@@ -102,7 +102,7 @@ func main() {
 	for i := 0; i < len(games); i++ {
 		var game = games[i]
 
-		outputFile.WriteString(fmt.Sprint("|", game.name, "|", game.release, "|", game.upscale.fsr1, game.upscale.fsr2, "|",
-			game.upscale.dlss1, game.upscale.dlss2, "|", game.upscale.xess, "|", game.notes))
+		outputFile.WriteString(fmt.Sprint("|", game.name, "|", game.release, "|", game.upscale.fsr1, "/", game.upscale.fsr2, "|",
+			game.upscale.dlss1, "/", game.upscale.dlss2, "|", game.upscale.xess, "|", game.notes, "|\n"))
 	}
 }
