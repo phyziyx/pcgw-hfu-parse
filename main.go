@@ -9,11 +9,10 @@ import (
 )
 
 type Upscale struct {
-	fsr1  string
-	fsr2  string
-	dlss1 string
-	dlss2 string
-	xess  string
+	amd    string
+	nvidia string
+	intel  string
+	misc   string
 }
 
 type Game struct {
@@ -39,14 +38,17 @@ func main() {
 	var line = 0
 	var re *regexp.Regexp
 	var games = make([]Game, 0)
-	var dlss1, dlss2, fsr1, fsr2, xess = "❌", "❌", "❌", "❌", "❌"
 
-	re, err = regexp.Compile(`\|-\|\[\[([A-Za-z\-,\.&0-9™:'\(\)\|\! 	]+)\]\](<ref>.+<\/ref>)\|(.+)\|(.+)\|(.+)\n?`)
+	// re, err = regexp.Compile(`\|-\|\[\[([A-Za-z\-,\.&0-9™:'\(\)\|\! 	]+)\]\](<ref>.+<\/ref>)\|(.+)\|(.+)\|(.+)\n?`)
+	re, err = regexp.Compile(`\|-\|\[\[([A-Za-z\-,\.&0-9™:–'\(\)\|\! 	]+)\]\](<ref>.+<\/ref>)\|(.+)\|(.+)\|(.+)\n?`)
 	if err != nil {
 		panic(err)
 	}
 
 	scanner := bufio.NewScanner(inputFile)
+
+	const present = "✔"
+	const absent = "❌"
 
 	for scanner.Scan() {
 		line += 1
@@ -57,37 +59,67 @@ func main() {
 		}
 
 		res := re.FindStringSubmatch(scanner.Text())
+		var amd, nvidia, intel, misc string
 
 		if strings.Contains(res[3], "FSR 1") {
-			fsr1 = "✔"
+			amd += "FSR 1 / "
+		}
+		if strings.Contains(res[3], "FSR 2.1") {
+			amd += "FSR 2.1 / "
+		} else if strings.Contains(res[3], "FSR 2") {
+			amd += "FSR 2.0 / "
 		}
 
-		if strings.Contains(res[3], "FSR 2") {
-			fsr2 = "✔"
+		if len(amd) == 0 {
+			amd = absent
+		}
+
+		amd = strings.TrimSuffix(amd, " / ")
+
+		if strings.Contains(res[3], "NIS") {
+			nvidia += "NIS / "
 		}
 
 		if strings.Contains(res[3], "DLSS 1") {
-			dlss1 = "✔"
+			nvidia += "DLSS 1 / "
+		} else if strings.Contains(res[3], "DLSS 2") {
+			nvidia += "DLSS 2 / "
 		}
 
-		if strings.Contains(res[3], "DLSS 2") {
-			dlss2 = "✔"
+		if len(nvidia) == 0 {
+			nvidia = absent
 		}
+
+		nvidia = strings.TrimSuffix(nvidia, " / ")
 
 		if strings.Contains(res[3], "xess") {
-			xess = "✔"
+			intel += present
+		} else {
+			intel += absent
 		}
+
+		if strings.Contains(res[3], "TSR") {
+			misc += "TSR / "
+		}
+		if strings.Contains(res[3], "TAAU") {
+			misc += "TAAU / "
+		}
+
+		if len(misc) == 0 {
+			misc = absent
+		}
+
+		misc = strings.TrimSuffix(misc, " / ")
 
 		var release = strings.Replace(fmt.Sprintf(res[4], res[5]), "EXTRA string=", "", 1)
 
 		games = append(games, Game{
 			name: res[1],
 			upscale: Upscale{
-				fsr1:  fsr1,
-				fsr2:  fsr2,
-				dlss1: dlss1,
-				dlss2: dlss2,
-				xess:  xess,
+				amd:    amd,
+				nvidia: nvidia,
+				intel:  intel,
+				misc:   misc,
 			},
 			release: release,
 			notes:   res[2],
@@ -104,11 +136,13 @@ func main() {
 	for i := 0; i < len(games); i++ {
 		var game = games[i]
 
-		outputFile.WriteString(fmt.Sprint("{{User:Mine18/Templates/High Fidelity Upscaling/row|", game.name, "|", game.release, "|",
-			game.upscale.fsr1, "/", game.upscale.fsr2, "|",
-			game.upscale.dlss1, "/", game.upscale.dlss2, "|",
-			game.upscale.xess, "|",
-			"N/A", "|",
+		outputFile.WriteString(fmt.Sprint("{{User:Mine18/Templates/High Fidelity Upscaling/row|",
+			game.name, "|",
+			game.release, "|",
+			game.upscale.amd, "|",
+			game.upscale.nvidia, "|",
+			game.upscale.intel, "|",
+			game.upscale.misc, "|",
 			game.notes, "}}\n"))
 	}
 }
