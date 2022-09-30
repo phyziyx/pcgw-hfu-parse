@@ -78,6 +78,8 @@ func main() {
 			xess = "✔"
 		}
 
+		var release = strings.Replace(fmt.Sprintf(res[4], res[5]), "EXTRA string=", "", 1)
+
 		games = append(games, Game{
 			name: res[1],
 			upscale: Upscale{
@@ -87,7 +89,7 @@ func main() {
 				dlss2: dlss2,
 				xess:  xess,
 			},
-			release: fmt.Sprintf(res[4], res[5]),
+			release: release,
 			notes:   res[2],
 		})
 	}
@@ -102,7 +104,11 @@ func main() {
 	for i := 0; i < len(games); i++ {
 		var game = games[i]
 
-		outputFile.WriteString(fmt.Sprint("|", game.name, "|", game.release, "|", game.upscale.fsr1, "/", game.upscale.fsr2, "|",
-			game.upscale.dlss1, "/", game.upscale.dlss2, "|", game.upscale.xess, "|", game.notes, "|\n"))
+		outputFile.WriteString(fmt.Sprint("{{User:Mine18/Templates/High Fidelity Upscaling/row|", game.name, "|", game.release, "|",
+			game.upscale.fsr1, "/", game.upscale.fsr2, "|",
+			game.upscale.dlss1, "/", game.upscale.dlss2, "|",
+			game.upscale.xess, "|",
+			"N/A", "|",
+			game.notes, "}}\n"))
 	}
 }
