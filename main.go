@@ -47,7 +47,6 @@ func main() {
 
 	scanner := bufio.NewScanner(inputFile)
 
-	const present = "✔"
 	const absent = "❌"
 
 	for scanner.Scan() {
@@ -60,13 +59,14 @@ func main() {
 
 		res := re.FindStringSubmatch(scanner.Text())
 		var amd, nvidia, intel, misc string
+		technology := res[3]
 
-		if strings.Contains(res[3], "FSR 1") {
+		if strings.Contains(technology, "FSR 1") {
 			amd += "FSR 1 / "
 		}
-		if strings.Contains(res[3], "FSR 2.1") {
+		if strings.Contains(technology, "FSR 2.1") {
 			amd += "FSR 2.1 / "
-		} else if strings.Contains(res[3], "FSR 2") {
+		} else if strings.Contains(technology, "FSR 2") {
 			amd += "FSR 2.0 / "
 		}
 
@@ -76,13 +76,13 @@ func main() {
 
 		amd = strings.TrimSuffix(amd, " / ")
 
-		if strings.Contains(res[3], "NIS") {
+		if strings.Contains(technology, "NIS") {
 			nvidia += "NIS / "
 		}
 
-		if strings.Contains(res[3], "DLSS 1") {
+		if strings.Contains(technology, "DLSS 1") {
 			nvidia += "DLSS 1 / "
-		} else if strings.Contains(res[3], "DLSS 2") {
+		} else if strings.Contains(technology, "DLSS 2") {
 			nvidia += "DLSS 2 / "
 		}
 
@@ -92,16 +92,16 @@ func main() {
 
 		nvidia = strings.TrimSuffix(nvidia, " / ")
 
-		if strings.Contains(res[3], "xess") {
-			intel += present
+		if strings.Contains(technology, "XeSS") {
+			intel += "XeSS"
 		} else {
 			intel += absent
 		}
 
-		if strings.Contains(res[3], "TSR") {
+		if strings.Contains(technology, "TSR") {
 			misc += "TSR / "
 		}
-		if strings.Contains(res[3], "TAAU") {
+		if strings.Contains(technology, "TAAU") {
 			misc += "TAAU / "
 		}
 
@@ -112,6 +112,9 @@ func main() {
 		misc = strings.TrimSuffix(misc, " / ")
 
 		var release = strings.Replace(fmt.Sprintf(res[4], res[5]), "EXTRA string=", "", 1)
+		release = strings.Replace(release, "%!", ` `, 1)
+		release = strings.Replace(release, `colspan="2"`, ``, 1)
+		release = strings.Replace(release, `}}`, ``, 1)
 
 		games = append(games, Game{
 			name: res[1],
@@ -137,7 +140,7 @@ func main() {
 		var game = games[i]
 
 		outputFile.WriteString(fmt.Sprint("{{User:Mine18/Templates/High Fidelity Upscaling/row|",
-			game.name, "|",
+			"[[", game.name, "]]", "|",
 			game.release, "|",
 			game.upscale.amd, "|",
 			game.upscale.nvidia, "|",
